@@ -3,6 +3,11 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  import('wasm').then(module => {
+    const sum = module.add_test(10, 20);
+    console.log(sum)
+  })
+
   return (
     <div className="App">
       <header className="App-header">
