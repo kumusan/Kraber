@@ -6,6 +6,7 @@ function App() {
   import('wasm').then(module => {
     const sum = module.add_test(10, 20);
     console.log(sum)
+    const test_data = ""
   })
 
   return (
@@ -24,6 +25,9 @@ function App() {
           Learn React
         </a>
       </header>
+      <div id="backgroun">
+        <canvas id="canvas" />
+      </div>
     </div>
   );
 }
