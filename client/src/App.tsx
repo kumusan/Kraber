@@ -1,13 +1,9 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { call } from './worker/call.worker';
 
 function App() {
-  import('wasm').then(module => {
-    const sum = module.add_test(10, 20);
-    console.log(sum)
-    const test_data = ""
-  })
 
   return (
     <div className="App">
@@ -16,6 +12,7 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
+        <button onClick={() => call()}>test</button>
         <a
           className="App-link"
           href="https://reactjs.org"
@@ -25,6 +22,7 @@ function App() {
           Learn React
         </a>
       </header>
+      <div id="wasmcall"></div>
       <div id="backgroun">
         <canvas id="canvas" />
       </div>
