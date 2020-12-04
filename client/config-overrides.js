@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = function override(config, env) {
+  config.output.globalObject = 'this';
   const wasmExtensionRegExp = /\.wasm$/;
   const workerExtensionRegExp = /\.worker\.js$/;
 
@@ -26,7 +27,6 @@ module.exports = function override(config, env) {
   });
 
 
-  config.output.globalObject = 'this';
 
   return config;
 };

@@ -19,6 +19,7 @@
   position: absolute;
   z-index: 2;
   text-shadow: rgba( 0, 0, 0, 1 ) 0px 1px 2px;
+  background-color: blueviolet;
 }
 
 #canvas {
