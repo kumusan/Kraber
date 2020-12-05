@@ -4,6 +4,7 @@ export const import_wasm = () => {
   import('wasm').then(module => {
     wasm = module;
   })
+  .catch(err => console.log(err));
 }
 
 // 関数呼び出しているだけでworkerを使用していない。
