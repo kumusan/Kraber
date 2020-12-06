@@ -1,12 +1,18 @@
-import { import_wasm, call } from './wasm_call'
+import { call, import_wasm } from './wasm_call'
 
-import_wasm();
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;
 
-ctx.addEventListener('message', async event => {
-  call();
-  ctx.postMessage({ output: 'アウトぷとテスト' });
+ctx.addEventListener('message', ({ data }) => {
+// eslint-disable-next-line no-restricted-globals
+  window = self;
+  if (data.type === 'init') {
+    import_wasm();
+    ctx.postMessage('init run');
+  } else if (data.type === 'render') {
+    call();
+    ctx.postMessage('render run');
+  }
 })
 
 export { }
