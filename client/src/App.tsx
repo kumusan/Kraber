@@ -1,25 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-// eslint-disable-next-line
-import Worker from 'worker-loader!./worker'
 import { import_wasm } from './wasm_call';
-
-let worker: Worker;
 
 function App() {
 
   React.useEffect(() => {
-    worker = new Worker();
-    worker.addEventListener('message', exec)
+    import_wasm();
   }, []);
-
-  const exec = () => {
-    worker.onmessage = (event: { data: String }) => {
-      console.log(`return data ${event.data}`);
-    };
-    worker.postMessage('送ったデータ');
-  }
 
   return (
     <div className="App">
@@ -28,7 +16,7 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
-        <button onClick={exec}>test</button>
+        <button onClick={() => console.log(1)}>test</button>
         <a
           className="App-link"
           href="https://reactjs.org"

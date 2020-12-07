@@ -3,7 +3,6 @@ const path = require('path');
 module.exports = function override(config, env) {
   config.output.globalObject = 'this';
   const wasmExtensionRegExp = /\.wasm$/;
-  const workerExtensionRegExp = /\.worker\.js$/;
 
   config.resolve.extensions.push('.wasm');
 
@@ -16,17 +15,10 @@ module.exports = function override(config, env) {
   });
 
   config.module.rules.push({
-    test: workerExtensionRegExp,
-    use: { loader: 'worker-loader' }
-  });
-
-  config.module.rules.push({
     test: wasmExtensionRegExp,
     include: path.resolve(__dirname, 'src'),
     use: [{ loader: require.resolve('wasm-loader'), options: {} }]
   });
-
-
 
   return config;
 };
