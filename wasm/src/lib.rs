@@ -2,15 +2,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 
-#[wasm_bindgen(start)]
-pub fn start() -> Result<(), JsValue> {
-    run_shader(false, "", "")
-}
-
 #[wasm_bindgen]
-pub fn run_shader(change: bool, vert_value: &str, frag_value: &str) -> Result<(), JsValue> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
+pub fn run_shader(canvas: web_sys::Element ,change: bool, vert_value: &str, frag_value: &str) -> Result<(), JsValue> {
     let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     let context = canvas
@@ -141,14 +134,4 @@ pub fn link_program(
 #[wasm_bindgen]
 pub fn add_test(a: u32, b: u32) -> u32 {
     a + b
-}
-
-#[wasm_bindgen]
-pub fn rerendering(size: &str) -> Result<(), JsValue> {
-    
-    let document = web_sys::window().unwrap().document().unwrap();
-    let h = document.get_element_by_id("wasmcall").unwrap();
-    h.set_inner_html(size);
-
-    Ok(())
 }
