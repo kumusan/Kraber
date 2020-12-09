@@ -1,14 +1,64 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { import_wasm } from './wasm_call';
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import Worker from 'worker-loader!./wasm.worker';
+
+// const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+// const offscreen = canvas.transferControlToOffscreen();
+const v = `
+  attribute vec4 position;
+  void main() {
+      gl_Position = position;
+  }
+`
+const f = `
+    void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+`
+
+// eslint-disable-next-line no-restricted-globals 
+let canvas: HTMLCanvasElement | Window = self
+
+function init(isWorker: boolean) {
+  if (isWorker) {
+    worker.terminate();
+  }
+  worker = new Worker();
+
+  document.getElementById('canvas-container')!.innerHTML = '<canvas id="canvas"></canvas>'
+  canvas = document.getElementById('canvas')! as HTMLCanvasElement;
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+}
+
+let worker: Worker;
 
 function App() {
-
   React.useEffect(() => {
-    import_wasm();
-  }, []);
+    init(false);
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const offscreen = canvas.transferControlToOffscreen();
+    worker.postMessage({
+      canvas: offscreen,
+      vert: v,
+      frag: f,
+    }, [offscreen]);
+  });
 
+  // 入力が変更されたときの処理
+  function test() {
+    init(true);
+
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const offscreen = canvas.transferControlToOffscreen();
+    worker.postMessage({
+      canvas: offscreen,
+      vert: v,
+      frag: f,
+    }, [offscreen]);
+  }
   return (
     <div className="App">
       <header className="App-header">
@@ -16,7 +66,7 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
-        <button onClick={() => console.log(1)}>test</button>
+        <button onClick={() => test()}>test</button>
         <a
           className="App-link"
           href="https://reactjs.org"
@@ -28,7 +78,7 @@ function App() {
       </header>
       <div id="wasmcall"></div>
       <div id="backgroun">
-        <canvas id="canvas" />
+        <div id="canvas-container" />
       </div>
     </div>
   );
