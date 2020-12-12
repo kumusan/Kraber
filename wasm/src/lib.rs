@@ -94,8 +94,3 @@ pub fn link_program(
             .unwrap_or_else(|| String::from("Unknown error creating program object")))
     }
 }
-
-#[wasm_bindgen]
-pub fn add_test(a: u32, b: u32) -> u32 {
-    a + b
-}
