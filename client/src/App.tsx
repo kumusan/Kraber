@@ -3,9 +3,8 @@ import logo from './logo.svg';
 import './App.css';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from 'worker-loader!./wasm.worker';
+import Editor from './components/editor'
 
-// const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-// const offscreen = canvas.transferControlToOffscreen();
 const v = `
   attribute vec4 position;
   void main() {
@@ -80,6 +79,7 @@ function App() {
       <div id="backgroun">
         <div id="canvas-container" />
       </div>
+      <Editor></Editor>
     </div>
   );
 }
