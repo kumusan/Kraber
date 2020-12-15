@@ -10,6 +10,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - name:
+        run: |
+          cd wasm
+          cargo install wasm-pack
+          wasm-pack build --out-dir ../pkg
       - name: npm install, build
         run: |
           cd client
