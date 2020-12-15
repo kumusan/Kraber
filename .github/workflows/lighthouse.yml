@@ -18,8 +18,9 @@ jobs:
       - name: npm install, build
         run: |
           cd client
-          npm install && npm install -g @lhci/cli@0.6.x
+          rm -rf node_modules
           npm cache clean -f
+          npm install && npm install -g @lhci/cli@0.6.x
           npm run build
       - name: run Lighthouse CI
         run: lhci autorun --upload.target=temporary-public-storage --staticDistDir=./build || echo "LHCI failed!"
