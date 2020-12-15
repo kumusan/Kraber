@@ -10,6 +10,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - name: cd client
+        run: cd client
       - name: npm install, build
         run: |
           npm install && npm install -g @lhci/cli@0.6.x
