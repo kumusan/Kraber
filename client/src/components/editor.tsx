@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import './editor.css'
 import { Editor, EditorState } from 'draft-js';
 
 function EditorComponent() {
@@ -13,11 +14,14 @@ function EditorComponent() {
   }
 
   return (
-    <Editor
-      ref={editor}
-      editorState={editorState}
-      onChange={setEditorState}
-    />
+    <div id="editor" onClick={focus}>
+      <Editor
+        ref={editor}
+        editorState={editorState}
+        onChange={setEditorState}
+        placeholder="This is Test"
+      />
+    </div>
   );
 }
 

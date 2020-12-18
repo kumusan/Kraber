@@ -1,14 +1,14 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from 'worker-loader!./wasm.worker';
 import Editor from './components/editor'
 
 const v = `
-  attribute vec4 position;
+  attribute vec3 position;
+  uniform mat4 mvpMatrix;
   void main() {
-      gl_Position = position;
+      gl_Position = mvpMatrix * vec4(position, 1.0);
   }
 `
 const f = `
@@ -60,26 +60,11 @@ function App() {
   }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <button onClick={() => test()}>test</button>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-      <div id="wasmcall"></div>
       <div id="backgroun">
         <div id="canvas-container" />
       </div>
-      <Editor></Editor>
+      <Editor />
+      <button onClick={() => test()}>test</button>
     </div>
   );
 }
