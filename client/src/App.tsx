@@ -6,15 +6,22 @@ import Editor from './components/editor'
 
 const v = `
   attribute vec3 position;
-  uniform mat4 mvpMatrix;
-  void main() {
-      gl_Position = mvpMatrix * vec4(position, 1.0);
+
+  void main(void){
+    gl_Position = vec4(position, 1.0);
   }
 `
 const f = `
-    void main() {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }
+  precision mediump float;
+  uniform float time;
+  uniform vec2  mouse;
+  uniform vec2  resolution;
+
+  void main(void){
+    vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+    vec2 color = (vec2(1.0) + p.xy) * 0.5;
+    gl_FragColor = vec4(color, 0.0, 1.0);
+  }
 `
 
 // eslint-disable-next-line no-restricted-globals 
