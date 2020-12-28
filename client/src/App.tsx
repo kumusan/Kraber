@@ -1,77 +1,23 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import './App.css';
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import Worker from 'worker-loader!./wasm.worker';
-import Editor from './components/editor'
-
-const v = `
-  attribute vec3 position;
-
-  void main(void){
-    gl_Position = vec4(position, 1.0);
-  }
-`
-const f = `
-  precision mediump float;
-  uniform float time;
-  uniform vec2  mouse;
-  uniform vec2  resolution;
-
-  void main(void){
-    vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-    vec2 color = (vec2(1.0) + p.xy) * 0.5;
-    gl_FragColor = vec4(color, 0.0, 1.0);
-  }
-`
-
-// eslint-disable-next-line no-restricted-globals 
-let canvas: HTMLCanvasElement | Window = self
-
-function init(isWorker: boolean) {
-  if (isWorker) {
-    worker.terminate();
-  }
-  worker = new Worker();
-
-  document.getElementById('canvas-container')!.innerHTML = '<canvas id="canvas"></canvas>'
-  canvas = document.getElementById('canvas')! as HTMLCanvasElement;
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
-}
-
-let worker: Worker;
+import EditorComponent from './components/editor'
 
 function App() {
-  React.useEffect(() => {
-    init(false);
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-    const offscreen = canvas.transferControlToOffscreen();
-    worker.postMessage({
-      canvas: offscreen,
-      vert: v,
-      frag: f,
-    }, [offscreen]);
-  });
 
-  // 入力が変更されたときの処理
-  function test() {
-    init(true);
+  let canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-    const offscreen = canvas.transferControlToOffscreen();
-    worker.postMessage({
-      canvas: offscreen,
-      vert: v,
-      frag: f,
-    }, [offscreen]);
-  }
+  useEffect(() => {
+  }, []);
+
+
   return (
     <div className="App">
       <div id="backgroun">
-        <div id="canvas-container" />
+        <canvas id="canvas" ref={canvasRef}></canvas>
+        <p><input type="checkbox" id="check" checked onChange={() => console.log(1)} /><label htmlFor="check"> auto run</label></p>
       </div>
-      <Editor />
-      <button onClick={() => test()}>test</button>
+      <EditorComponent canvas={canvasRef.current!} />
+      {/* <button onClick={() => test(ref)}>test</button> */}
     </div>
   );
 }
