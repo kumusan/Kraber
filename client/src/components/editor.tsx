@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './editor.css'
 import { Editor, EditorState } from 'draft-js';
 import { call } from './wasm'
@@ -27,27 +27,34 @@ type Props = {
   canvas: HTMLCanvasElement
 }
 
-function EditorComponent(props: Props) {
+function EditorComponent() {
 
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
 
   const editor = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   function focus() {
     // @ts-ignore
     editor.current.focus();
   }
 
-  call(props.canvas, v, f);
+  useEffect(() => {
+    console.log(canvasRef.current)
+    call(canvasRef.current!, v, f);
+  }, [])
 
   return (
-    <div id="editor" onClick={focus}>
-      <Editor
-        ref={editor}
-        editorState={editorState}
-        onChange={setEditorState}
-        placeholder="This is Test"
-      />
+    <div>
+      <div id="editor" onClick={focus}>
+        <Editor
+          ref={editor}
+          editorState={editorState}
+          onChange={setEditorState}
+          placeholder="This is Test"
+        />
+      </div>
+      <canvas id="canvas" ref={canvasRef}></canvas>
     </div>
   );
 }
