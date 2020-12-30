@@ -13,7 +13,6 @@ export const call = async (canvas: HTMLCanvasElement, vert: string, frag: string
     console.log('import now')
     await import_wasm();
   }
-  canvas.getContext('webgl')!;
   // ここ呼び出しだけ
   wasm.run_shader(canvas, vert, frag);
   // requestAnimationFrame(() => wasm.render(canvas, location));
