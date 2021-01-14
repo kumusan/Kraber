@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './editor.css'
-import { Editor, EditorState } from 'draft-js';
+import { Editor, EditorState, ContentState } from 'draft-js';
 import { call } from './wasm'
 
 const v = `
@@ -12,27 +12,27 @@ const v = `
 `
   // uniform float time;
   // uniform vec2  mouse;
+    // vec2 color = (vec2(1.0) + p.xy) * 0.5;
 const f = `
   precision mediump float;
+  uniform float time;
   uniform vec2  resolution;
 
   void main(void){
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-    vec2 color = (vec2(1.0) + p.xy) * 0.5;
-    gl_FragColor = vec4(color, 0.0, 1.0);
+    float t = sin(0.5 * 30.0 + time * 5.0);
+    gl_FragColor = vec4(vec3(t), 1.0);
   }
 `
 
-type Props = {
-  canvas: HTMLCanvasElement
-}
-
 function EditorComponent() {
 
-  const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
+  // const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
+  const [editorState, setEditorState] = useState(() => EditorState.createWithContent(
+    ContentState.createFromText(f)
+  ));
 
   const editor = useRef(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   function focus() {
     // @ts-ignore
@@ -40,8 +40,7 @@ function EditorComponent() {
   }
 
   useEffect(() => {
-    console.log(canvasRef.current)
-    call(canvasRef.current!, v, f);
+    call(v, f);
   }, [])
 
   return (
@@ -51,10 +50,8 @@ function EditorComponent() {
           ref={editor}
           editorState={editorState}
           onChange={setEditorState}
-          placeholder="This is Test"
         />
       </div>
-      <canvas id="canvas" ref={canvasRef}></canvas>
     </div>
   );
 }

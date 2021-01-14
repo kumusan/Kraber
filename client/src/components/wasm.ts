@@ -8,13 +8,12 @@ const import_wasm = async () => {
 }
 
 // fragで構文エラーが発生する。
-export const call = async (canvas: HTMLCanvasElement, vert: string, frag: string) => {
+export const call = async (vert: string, frag: string) => {
   if (!wasm) {
     console.log('import now')
     await import_wasm();
   }
   // ここ呼び出しだけ
-  wasm.run_shader(canvas, vert, frag);
-  // requestAnimationFrame(() => wasm.render(canvas, location));
+  wasm.run_shader(vert, frag);
 }
 

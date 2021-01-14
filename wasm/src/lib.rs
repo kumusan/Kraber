@@ -8,14 +8,19 @@ use std::panic;
 use console_error_panic_hook;
 
 #[wasm_bindgen]
-pub fn run_shader(canvas: HtmlCanvasElement, vert_value: &str, frag_value: &str) 
+pub fn run_shader(vert_value: &str, frag_value: &str) 
     -> Result<(), JsValue> {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
 
+    let canvas: HtmlCanvasElement = get_element_by_id("canvas");
+    // canvas.add_event_listener_with_callback_and_bool("mousemove", , true);
     let context = canvas
         .get_context("webgl")?
         .unwrap()
         .dyn_into::<WebGlRenderingContext>()?;
+
+    // let check: HtmlInputElement = get_element_by_id("check");
+    // check.add_event_listener_with_callback_and_bool("change", , true);
 
     let vert_shader = compile_shader(
         &context,
@@ -32,9 +37,9 @@ pub fn run_shader(canvas: HtmlCanvasElement, vert_value: &str, frag_value: &str)
 
     let mut uni_location: Vec<WebGlUniformLocation> = Vec::new();
 
-    // uni_location.push(context.get_uniform_location(&program, "time").unwrap());
     // uni_location.push(context.get_uniform_location(&program, "mouse").unwrap());
     uni_location.push(context.get_uniform_location(&program, "resolution").unwrap());
+    uni_location.push(context.get_uniform_location(&program, "time").unwrap());
 
     let v_position = create_vbo(&context);
     let v_index = create_ibo(&context);
@@ -47,7 +52,7 @@ pub fn run_shader(canvas: HtmlCanvasElement, vert_value: &str, frag_value: &str)
 
     context.clear_color(0.0, 0.0, 0.0, 1.0);
 
-    // let start_time = js_sys::Date::now();
+    let start_time = js_sys::Date::now();
 
     {
         let f = Rc::new(RefCell::new(None));
@@ -55,7 +60,7 @@ pub fn run_shader(canvas: HtmlCanvasElement, vert_value: &str, frag_value: &str)
 
         *g.borrow_mut() = Some(Closure::wrap(
             Box::new(move || {
-                render(&context,  &uni_location[0]);
+                render(&context, &uni_location, start_time);
                 set_timeout(f.borrow().as_ref().unwrap(), 100);
             }) as Box<dyn FnMut()>
         ));
@@ -68,19 +73,19 @@ pub fn run_shader(canvas: HtmlCanvasElement, vert_value: &str, frag_value: &str)
 
 pub fn render(
     context: &WebGlRenderingContext,
-    // start_time: &f64,
-    location: &WebGlUniformLocation,
+    location: &Vec<WebGlUniformLocation>,
+    start_time: f64,
 ) {
-// (js_sys::Date::now() - start_time) 
-    // let time = 1000000.0 * 0.001;
+    let now_time =  js_sys::Date::now();
+    let time = (now_time - start_time) * 0.001;
 
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
-    // context.uniform1f(Some(&location[0]), time as f32);
     // context.uniform2fv_with_f32_array(Some(&location[1]), &[0.5, 0.5]);
     // context.uniform2fv_with_f32_array(Some(&location[2]), &[500.0, 500.0]);
     
-    context.uniform2fv_with_f32_array(Some(&location), &[500.0, 500.0]);
+    context.uniform2fv_with_f32_array(Some(&location[0]), &[500.0, 500.0]);
+    context.uniform1f(Some(&location[1]), time as f32);
 
     context.draw_elements_with_i32(
         WebGlRenderingContext::TRIANGLES,
@@ -94,6 +99,21 @@ pub fn render(
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
+}
+
+fn document() -> web_sys::Document {
+    window()
+        .document()
+        .expect("should have a document on window")
+}
+
+fn get_element_by_id<T: JsCast>(id: &str) -> T {
+    document()
+        .get_element_by_id(id)
+        .expect("not found")
+        .dyn_into::<T>()
+        .map_err(|_| ())
+        .unwrap()
 }
 
 fn set_timeout(f: &Closure<dyn FnMut()>, ms: i32) {
