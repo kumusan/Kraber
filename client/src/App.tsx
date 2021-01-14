@@ -6,9 +6,7 @@ function App() {
 
   return (
     <div className="App">
-      <div id="backgroun">
-        <p><input type="checkbox" id="check" checked onChange={() => console.log(1)} /><label htmlFor="check"> auto run</label></p>
-      </div>
+      <canvas id="canvas"></canvas>
       <EditorComponent />
     </div>
   );
