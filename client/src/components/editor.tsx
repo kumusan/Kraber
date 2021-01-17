@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './editor.css'
+import styled from 'styled-components';
 import { Editor, EditorState, ContentState } from 'draft-js';
 import { call } from './wasm'
 
@@ -25,6 +25,19 @@ const f = `
   }
 `
 
+const EditorFocus = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  position: absolute;
+  z-index: 2;
+  text-shadow: rgba( 0, 0, 0, 1 ) 0px 1px 2px;
+  height: 100vh;
+  width: 100vh;
+  opacity: 0.5;
+`
+
 function EditorComponent() {
 
   // const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
@@ -41,19 +54,18 @@ function EditorComponent() {
 
   useEffect(() => {
     call(v, f);
-  }, [])
+  }, [editor])
 
   return (
-    <div>
-      <div id="editor" onClick={focus}>
+    <EditorFocus onClick={focus}>
+      <button onClick={() => console.log(editorState)}>1111</button>
         <Editor
           ref={editor}
           editorState={editorState}
           onChange={setEditorState}
         />
-      </div>
-    </div>
-  );
+    </EditorFocus>
+  )
 }
 
 export default EditorComponent;
