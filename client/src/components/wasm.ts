@@ -13,7 +13,5 @@ export const call = async (vert: string, frag: string) => {
     console.log('import now')
     await import_wasm();
   }
-  // ここ呼び出しだけ
   wasm.run_shader(vert, frag);
 }
-
