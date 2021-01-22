@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Editor, EditorState, ContentState } from 'draft-js';
+import { Editor, EditorState, convertFromRaw, convertToRaw } from 'draft-js';
 import { call } from './wasm'
 
 const v = `
@@ -10,9 +10,6 @@ const v = `
     gl_Position = vec4(position, 1.0);
   }
 `
-  // uniform float time;
-  // uniform vec2  mouse;
-    // vec2 color = (vec2(1.0) + p.xy) * 0.5;
 const f = `
   precision mediump float;
   uniform float time;
@@ -33,17 +30,37 @@ const EditorFocus = styled.div`
   position: absolute;
   z-index: 2;
   text-shadow: rgba( 0, 0, 0, 1 ) 0px 1px 2px;
-  height: 100vh;
-  width: 100vh;
-  opacity: 0.5;
+  height: 100%;
+  width: 100%;
+  margin-top: 20px;
+  margin-left: 20px;
+  opacity: 0.1;
+  transition: 0.6s;
+  &:hover {
+    opacity: 1.0;
+  }
 `
+
+const init = EditorState.createWithContent(
+  convertFromRaw({
+    entityMap: {},
+    blocks: [
+      {
+        key: "x12",
+        text: f,
+        type: "unstyled",
+        depth: 0,
+        entityRanges: [],
+        inlineStyleRanges: [],
+        data: {},
+      },
+    ],
+  })
+);
 
 function EditorComponent() {
 
-  // const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
-  const [editorState, setEditorState] = useState(() => EditorState.createWithContent(
-    ContentState.createFromText(f)
-  ));
+  const [editorState, setEditorState] = useState(init);
 
   const editor = useRef(null);
 
@@ -58,7 +75,7 @@ function EditorComponent() {
 
   return (
     <EditorFocus onClick={focus}>
-      <button onClick={() => console.log(editorState)}>1111</button>
+      <button onClick={() => console.log(convertToRaw(editorState.getCurrentContent()).blocks[0].text)}>1111</button>
         <Editor
           ref={editor}
           editorState={editorState}
