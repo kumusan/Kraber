@@ -13,14 +13,10 @@ pub fn run_shader(vert_value: &str, frag_value: &str)
     panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     let canvas: HtmlCanvasElement = get_element_by_id("canvas");
-    // canvas.add_event_listener_with_callback_and_bool("mousemove", , true);
     let context = canvas
         .get_context("webgl")?
         .unwrap()
         .dyn_into::<WebGlRenderingContext>()?;
-
-    // let check: HtmlInputElement = get_element_by_id("check");
-    // check.add_event_listener_with_callback_and_bool("change", , true);
 
     let vert_shader = compile_shader(
         &context,
@@ -35,11 +31,19 @@ pub fn run_shader(vert_value: &str, frag_value: &str)
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
 
-    let mut uni_location: Vec<WebGlUniformLocation> = Vec::new();
+    let uni_location: Vec<UniformCheck> = get_uniform(&context, &program);
 
-    // uni_location.push(context.get_uniform_location(&program, "mouse").unwrap());
-    uni_location.push(context.get_uniform_location(&program, "resolution").unwrap());
-    uni_location.push(context.get_uniform_location(&program, "time").unwrap());
+    // ---------------
+    // let mut uni_location: Vec<UniformCheck> = Vec::new();
+    // if let Some(t) = context.get_uniform_location(&program, "time") {
+    //     let u = UniformCheck { uniform: t, name: "time".to_string() };
+    //     uni_location.push(u);
+    // }
+    // if let Some(r) = context.get_uniform_location(&program, "resolution") {
+    //     let u = UniformCheck { uniform: r, name: "resolution".to_string() };
+    //     uni_location.push(u);
+    // }
+    // ---------------
 
     let v_position = create_vbo(&context);
     let v_index = create_ibo(&context);
@@ -54,18 +58,30 @@ pub fn run_shader(vert_value: &str, frag_value: &str)
 
     let start_time = js_sys::Date::now();
 
+    // {
+    //     let f = Rc::new(RefCell::new(None));
+    //     let g = f.clone();
+
+    //     *g.borrow_mut() = Some(Closure::wrap(
+    //         Box::new(move || {
+    //             render(&context, &uni_location, start_time);
+    //             set_timeout(f.borrow().as_ref().unwrap(), 100);
+    //         }) as Box<dyn FnMut()>
+    //     ));
+
+    //     set_timeout(g.borrow().as_ref().unwrap(), 100);
+    // }
     {
         let f = Rc::new(RefCell::new(None));
         let g = f.clone();
+        let uniform_len = uni_location.len() as u32;
 
-        *g.borrow_mut() = Some(Closure::wrap(
-            Box::new(move || {
-                render(&context, &uni_location, start_time);
-                set_timeout(f.borrow().as_ref().unwrap(), 100);
-            }) as Box<dyn FnMut()>
-        ));
+        *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+            render(&context, &uni_location, start_time, uniform_len);
+            request_animation_frame(f.borrow().as_ref().unwrap());
+        }) as Box<dyn FnMut()>));
 
-        set_timeout(g.borrow().as_ref().unwrap(), 100);
+        request_animation_frame(g.borrow().as_ref().unwrap());
     }
 
     Ok(())
@@ -73,19 +89,24 @@ pub fn run_shader(vert_value: &str, frag_value: &str)
 
 pub fn render(
     context: &WebGlRenderingContext,
-    location: &Vec<WebGlUniformLocation>,
+    location: &Vec<UniformCheck>,
     start_time: f64,
+    location_len: u32,
 ) {
-    let now_time =  js_sys::Date::now();
-    let time = (now_time - start_time) * 0.001;
+    let time = (js_sys::Date::now() - start_time) * 0.001;
 
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
-    // context.uniform2fv_with_f32_array(Some(&location[1]), &[0.5, 0.5]);
-    // context.uniform2fv_with_f32_array(Some(&location[2]), &[500.0, 500.0]);
-    
-    context.uniform2fv_with_f32_array(Some(&location[0]), &[500.0, 500.0]);
-    context.uniform1f(Some(&location[1]), time as f32);
+    if location_len == 1 {
+        if location[0].name == "time" {
+            context.uniform1f(Some(&location[0].uniform), time as f32);
+        } else if location[0].name == "resolution" {
+            context.uniform2fv_with_f32_array(Some(&location[0].uniform), &[1000.0, 1000.0]);
+        }
+    } else if location_len == 2 {
+        context.uniform1f(Some(&location[0].uniform), time as f32);
+        context.uniform2fv_with_f32_array(Some(&location[1].uniform), &[1000.0, 1000.0]);
+    }
 
     context.draw_elements_with_i32(
         WebGlRenderingContext::TRIANGLES,
@@ -95,6 +116,27 @@ pub fn render(
     );
     context.flush();
 
+}
+
+pub struct UniformCheck {
+    uniform: WebGlUniformLocation,
+    name: String,
+}
+
+fn get_uniform(
+    context: &WebGlRenderingContext, 
+    program: &WebGlProgram,
+) -> Vec<UniformCheck> {
+    let mut locations: Vec<UniformCheck> = Vec::new();
+    if let Some(t) = context.get_uniform_location(&program, "time") {
+        let u = UniformCheck { uniform: t, name: "time".to_string() };
+        locations.push(u);
+    }
+    if let Some(r) = context.get_uniform_location(&program, "resolution") {
+        let u = UniformCheck { uniform: r, name: "resolution".to_string() };
+        locations.push(u);
+    }
+    locations
 }
 
 fn window() -> web_sys::Window {
@@ -116,9 +158,15 @@ fn get_element_by_id<T: JsCast>(id: &str) -> T {
         .unwrap()
 }
 
-fn set_timeout(f: &Closure<dyn FnMut()>, ms: i32) {
+// fn set_timeout(f: &Closure<dyn FnMut()>, ms: i32) {
+//     window()
+//         .set_timeout_with_callback_and_timeout_and_arguments_0(f.as_ref().unchecked_ref(), ms)
+//         .expect("should register `requestAnimationFrame` OK");
+// }
+
+fn request_animation_frame(f: &Closure<dyn FnMut()>) {
     window()
-        .set_timeout_with_callback_and_timeout_and_arguments_0(f.as_ref().unchecked_ref(), ms)
+        .request_animation_frame(f.as_ref().unchecked_ref())
         .expect("should register `requestAnimationFrame` OK");
 }
 
@@ -203,7 +251,7 @@ pub fn create_ibo(context: &WebGlRenderingContext) -> Option<web_sys::WebGlBuffe
     context.bind_buffer(WebGlRenderingContext::ELEMENT_ARRAY_BUFFER, Some(&buffer));
 
     let index: [i16; 6] = [
-        0, 1, 2,
+        0, 2, 1,
         1, 2, 3
     ];
 
